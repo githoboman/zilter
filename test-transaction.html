@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Finance - BOT Chain Testnet Transaction Sender</title>
+    <style>
+        :root {
+            --bg: #09090b;
+            --card-bg: #18181b;
+            --border: #27272a;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --purple: #8b5cf6;
+            --emerald: #10b981;
+            --text: #f4f4f5;
+            --text-dim: #a1a1aa;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            margin-top: 8px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .row:last-child { border-bottom: none; }
+        .row .label { color: var(--text-dim); }
+        .row .value { font-family: ui-monospace, monospace; font-weight: 600; color: #fff; }
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        button.purple {
+            background: var(--purple);
+        }
+        button.purple:hover:not(:disabled) {
+            background: #7c3aed;
+        }
+        button.outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        button.outline:hover:not(:disabled) {
+            background: #27272a;
+        }
+        .status-box {
+            background: #121214;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: ui-monospace, monospace;
+            font-size: 13px;
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #a1a1aa;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status-box.active {
+            border-color: var(--emerald);
+            color: #a7f3d0;
+        }
+        a {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #09090b;
+            border: 1px solid var(--border);
+            color: #fff;
+            font-family: ui-monospace, monospace;
+            font-size: 14px;
+            margin-top: 6px;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Aura Finance Test Tool</h1>
+            <p>Direct interaction suite for BOT Chain Testnet</p>
+            <span class="badge">EVM Chain ID: 968 (0x3c8) • 0.75s Finality</span>
+        </div>
+
+        <!-- Wallet Card -->
+        <div class="card">
+            <h2>
+                <span>Wallet Status</span>
+                <span id="networkBadge" style="font-size: 12px; font-weight: normal; color: #a1a1aa;">Not Connected</span>
+            </h2>
+            <div class="row">
+                <span class="label">Connected Address:</span>
+                <span class="value" id="accountDisplay">None</span>
+            </div>
+            <div class="row">
+                <span class="label">BOT Balance:</span>
+                <span class="value" id="balanceDisplay">0.0000 BOT</span>
+            </div>
+            <div class="row">
+                <span class="label">Network RPC:</span>
+                <span class="value" style="font-size: 11px;">https://rpc.bohr.life</span>
+            </div>
+
+            <div class="btn-group">
+                <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
+                <button class="outline" id="switchBtn" onclick="switchNetwork()">Switch to BOT Chain</button>
+            </div>
+        </div>
+
+        <!-- Contract Interactions Card -->
+        <div class="card">
+            <h2>Aura Vault Operations</h2>
+            <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 16px;">
+                Interact directly with the Aura Vault contract (<span style="font-family: monospace; color: #93c5fd;">0x49486a845493bEC2CB320598EC4d1fEb11e1F546</span>).
+            </p>
+
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 12px; color: var(--text-dim);">Deposit Amount (BOT):</label>
+                <input id="depositAmount" type="number" step="0.01" value="0.1" />
+            </div>
+            <button id="depositBtn" onclick="depositBot()" style="width: 100%; margin-bottom: 12px;">
+                1. Deposit BOT Collateral
+            </button>
+
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 12px; color: var(--text-dim);">Mint Amount (aBTC):</label>
+                <input id="mintAmount" type="number" step="0.00001" value="0.00001" />
+            </div>
+            <button id="mintBtn" class="purple" onclick="mintAbtc()" style="width: 100%; margin-bottom: 12px;">
+                2. Mint aBTC (Borrow)
+            </button>
+
+            <button class="outline" onclick="sendVerificationTx()" style="width: 100%;">
+                3. Send Quick Live Testnet Tx (0.0001 BOT)
+            </button>
+        </div>
+
+        <!-- Status Card -->
+        <div class="card">
+            <h2>Transaction Log & Verification</h2>
+            <div id="status" class="status-box">Status: Ready. Please connect your Web3 wallet.</div>
+            <div style="margin-top: 12px; font-size: 12px; display: flex; justify-content: space-between;">
+                <a href="https://faucet.botchain.ai/basic" target="_blank">🚰 Claim Testnet tBOT Faucet</a>
+                <a href="https://scan.bohr.life/" target="_blank">🔍 BOTScan Explorer</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ethers v6 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+    <script>
+        const BOTCHAIN_TESTNET = {
+            chainId: 968,
+            chainIdHex: '0x3c8',
+            chainName: 'BOT Chain Testnet',
+            rpcUrl: 'https://rpc.bohr.life',
+            currency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+            blockExplorer: 'https://scan.bohr.life'
+        };
+
+        const VAULT_ADDRESS = '0x49486a845493bEC2CB320598EC4d1fEb11e1F546';
+        const VAULT_ABI = [
+            'function deposit() external payable',
+            'function mint(uint256 amountToMint) external',
+            'function getBalance(address user) external view returns (uint256)',
+            'function getDebt(address user) external view returns (uint256)'
+        ];
+
+        let provider = null;
+        let signer = null;
+        let currentAccount = null;
+
+        const statusBox = document.getElementById('status');
+        const accountDisplay = document.getElementById('accountDisplay');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const networkBadge = document.getElementById('networkBadge');
+
+        function log(msg, isSuccess = false) {
+            statusBox.innerHTML = msg;
+            if (isSuccess) statusBox.classList.add('active');
+            else statusBox.classList.remove('active');
+            console.log(msg);
+        }
+
+        async function init() {
+            if (window.ethereum) {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                const accounts = await provider.send("eth_accounts", []);
+                if (accounts.length > 0) {
+                    await handleAccount(accounts[0]);
+                }
+                window.ethereum.on('accountsChanged', (accs) => {
+                    if (accs.length > 0) handleAccount(accs[0]);
+                    else resetWallet();
+                });
+                window.ethereum.on('chainChanged', () => window.location.reload());
+            } else {
+                log('❌ No EVM wallet detected. Please install MetaMask or OKX.');
+            }
+        }
+
+        async function handleAccount(account) {
+            currentAccount = account;
+            signer = await provider.getSigner();
+            accountDisplay.innerText = account.substring(0, 6) + '...' + account.substring(account.length - 4);
+            
+            const network = await provider.getNetwork();
+            const currentChainId = Number(network.chainId);
+
+            if (currentChainId === BOTCHAIN_TESTNET.chainId) {
+                networkBadge.innerText = '✅ BOT Chain Testnet';
+                networkBadge.style.color = '#34d399';
+            } else {
+                networkBadge.innerText = '⚠️ Wrong Network (' + currentChainId + ')';
+                networkBadge.style.color = '#fbbf24';
+            }
+
+            await refreshBalance();
+            log('Connected: ' + account + ' on Chain ID ' + currentChainId);
+        }
+
+        async function refreshBalance() {
+            if (!currentAccount || !provider) return;
+            try {
+                const bal = await provider.getBalance(currentAccount);
+                balanceDisplay.innerText = parseFloat(ethers.formatEther(bal)).toFixed(4) + ' BOT';
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        function resetWallet() {
+            currentAccount = null;
+            signer = null;
+            accountDisplay.innerText = 'None';
+            balanceDisplay.innerText = '0.0000 BOT';
+            networkBadge.innerText = 'Not Connected';
+            log('Wallet disconnected.');
+        }
+
+        async function connectWallet() {
+            if (!window.ethereum) {
+                alert('Please install MetaMask');
+                return;
+            }
+            try {
+                log('Connecting wallet...');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                await handleAccount(accounts[0]);
+                const network = await provider.getNetwork();
+                if (Number(network.chainId) !== BOTCHAIN_TESTNET.chainId) {
+                    await switchNetwork();
+                }
+            } catch (err) {
+                log('❌ Connect error: ' + (err.message || err));
+            }
+        }
+
+        async function switchNetwork() {
+            if (!window.ethereum) return;
+            try {
+                log('Switching to BOT Chain Testnet (Chain ID: 968)...');
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: BOTCHAIN_TESTNET.chainIdHex }]
+                });
+                log('Switched to BOT Chain Testnet successfully!', true);
+            } catch (switchError) {
+                if (switchError.code === 4902 || switchError.message?.includes('Unrecognized chain')) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BOTCHAIN_TESTNET.chainIdHex,
+                                chainName: BOTCHAIN_TESTNET.chainName,
+                                rpcUrls: [BOTCHAIN_TESTNET.rpcUrl],
+                                nativeCurrency: BOTCHAIN_TESTNET.currency,
+                                blockExplorerUrls: [BOTCHAIN_TESTNET.blockExplorer]
+                            }]
+                        });
+                        log('Added & switched to BOT Chain Testnet!', true);
+                    } catch (addError) {
+                        log('❌ Add chain error: ' + addError.message);
+                    }
+                } else {
+                    log('❌ Switch error: ' + switchError.message);
+                }
+            }
+        }
+
+        async function depositBot() {
+            if (!signer) return alert('Connect wallet first!');
+            const amount = document.getElementById('depositAmount').value;
+            if (!amount || parseFloat(amount) <= 0) return alert('Invalid amount');
+
+            try {
+                log('Depositing ' + amount + ' BOT into Aura Vault...');
+                const vault = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, signer);
+                const valueWei = ethers.parseEther(amount);
+                
+                let tx;
+                try {
+                    tx = await vault.deposit({ value: valueWei });
+                } catch {
+                    tx = await signer.sendTransaction({
+                        to: VAULT_ADDRESS,
+                        value: valueWei,
+                        data: '0xd0e30db0'
+                    });
+                }
+
+                log(`✅ Deposit submitted!\nTx Hash: ${tx.hash}\nTracking on BOTScan: <a href="${BOTCHAIN_TESTNET.blockExplorer}/tx/${tx.hash}" target="_blank">View on BOTScan</a>\nWaiting for confirmation...`);
+                await tx.wait(1);
+                log(`🎉 Confirmed in block!\nTx Hash: <a href="${BOTCHAIN_TESTNET.blockExplorer}/tx/${tx.hash}" target="_blank">${tx.hash}</a>`, true);
+                await refreshBalance();
+            } catch (err) {
+                log('❌ Deposit failed: ' + (err.reason || err.message));
+            }
+        }
+
+        async function mintAbtc() {
+            if (!signer) return alert('Connect wallet first!');
+            const amount = document.getElementById('mintAmount').value;
+            if (!amount || parseFloat(amount) <= 0) return alert('Invalid amount');
+
+            try {
+                log('Minting ' + amount + ' aBTC...');
+                const vault = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, signer);
+                const mintUnits = ethers.parseEther(amount);
+                const tx = await vault.mint(mintUnits);
+
+                log(`✅ Mint submitted!\nTx Hash: ${tx.hash}\n<a href="${BOTCHAIN_TESTNET.blockExplorer}/tx/${tx.hash}" target="_blank">View on BOTScan</a>`);
+                await tx.wait(1);
+                log(`🎉 aBTC Mint confirmed!\nTx Hash: <a href="${BOTCHAIN_TESTNET.blockExplorer}/tx/${tx.hash}" target="_blank">${tx.hash}</a>`, true);
+            } catch (err) {
+                log('❌ Mint failed: ' + (err.reason || err.message));
+            }
+        }
+
+        async function sendVerificationTx() {
+            if (!signer) return alert('Connect wallet first!');
+            try {
+                log('Submitting live testnet verification transaction...');
+                const tx = await signer.sendTransaction({
+                    to: VAULT_ADDRESS,
+                    value: ethers.parseEther('0.0001'),
+                    data: '0xd0e30db0'
+                });
+
+                log(`✅ Live Testnet Tx Submitted!\nTx Hash: <a href="${BOTCHAIN_TESTNET.blockExplorer}/tx/${tx.hash}" target="_blank">${tx.hash}</a>\nCopy this hash for your submission form!`);
+                await tx.wait(1);
+                log(`🎉 Confirmed on BOT Chain Testnet!\nTx Hash: <a href="${BOTCHAIN_TESTNET.blockExplorer}/tx/${tx.hash}" target="_blank">${tx.hash}</a>`, true);
+                await refreshBalance();
+            } catch (err) {
+                log('❌ Tx error: ' + (err.reason || err.message));
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

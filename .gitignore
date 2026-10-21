@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js & Build Outputs
+.next/
+out/
+build/
+dist/
+
+# Environment Files & Secrets (never commit deployment private keys)
+.env
+.env.local
+.env.*.local
+*.key
+contracts/.env
+
+# Vercel
+.vercel/
+
+# Logs & Testing
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+coverage/
+
+# OS & Misc
+.DS_Store
+Thumbs.db
+*.pem
+*.tsbuildinfo
+next-env.d.ts

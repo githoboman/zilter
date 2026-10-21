@@ -1,0 +1,15 @@
+{
+  "network": "BOT Chain Testnet",
+  "chainId": 968,
+  "rpcUrl": "https://rpc.bohr.life",
+  "deployer": "0x36a0b6A1fb7fC67aFe8A22939443311E1B612CfF",
+  "contracts": {
+    "auraToken": "0x017D10E6FF87bBA10a7C24f5eC1dC627AC4e5698",
+    "auraVault": "0x49486a845493bEC2CB320598EC4d1fEb11e1F546"
+  },
+  "deployedAt": "2026-10-21T00:56:37.693Z",
+  "explorer": {
+    "auraToken": "https://scan.bohr.life/address/0x017D10E6FF87bBA10a7C24f5eC1dC627AC4e5698",
+    "auraVault": "https://scan.bohr.life/address/0x49486a845493bEC2CB320598EC4d1fEb11e1F546"
+  }
+}
